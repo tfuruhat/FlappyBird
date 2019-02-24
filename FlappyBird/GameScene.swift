@@ -13,6 +13,8 @@ class GameScene: SKScene
 {
     var scrollNode:SKNode!
     var wallNode:SKNode!
+    var bird:SKSpriteNode!
+    
     // SKView上にシーンが表示された時に呼ばれるメソッド
     override func didMove(to view: SKView)
     {
@@ -31,6 +33,28 @@ class GameScene: SKScene
         setupGound()
         setupCould()
         setupWall()
+        setupBird()
+    }
+    
+    func setupBird()
+    {
+        // 鳥の画像を2種類読み込む
+        let birdTextureA = SKTexture(imageNamed: "bird_a")
+        birdTextureA.filteringMode = .linear
+        let birdTextureB = SKTexture(imageNamed: "bird_b")
+        birdTextureB.filteringMode = .linear
+        
+        // 2種類のテクスチャを交互に変更するアニメーションを作成
+        let texturesAnimation = SKAction.animate(with: [birdTextureA, birdTextureB], timePerFrame: 0.2)
+        let flap = SKAction.repeatForever(texturesAnimation)
+        
+        // スプライトを作成
+        bird = SKSpriteNode(texture: birdTextureA)
+        bird.position = CGPoint(x: self.frame.size.width * 0.2, y:self.frame.size.height * 0.7)
+        // アニメーションを設定
+        bird.run(flap)
+        // スプライトを追加する
+        addChild(bird)
     }
     
     func setupGound()
@@ -52,14 +76,14 @@ class GameScene: SKScene
         // 左にスクロール -> 元の位置 -> 左にスクロールと無限に繰り返すアクション
         let repeatScrollGound = SKAction.repeatForever(SKAction.sequence([moveGround, resetGround]))
         // groundのスプライトを配置する
-        for _ in 0 ..< needNumber
+        for i in 0 ..< needNumber
         {
             // テクスチャを指定してスプライトを作成する
             let sprite = SKSpriteNode(texture: groundTexture)
             
             // スプライトの表示する位置を指定する
             sprite.position = CGPoint(
-                x: groundTexture.size().width / 2,
+                x: groundTexture.size().width / 2 + groundTexture.size().width * CGFloat(i),
                 y: groundTexture.size().height / 2
             )
             // スプライトにアクションを設定する
@@ -89,15 +113,15 @@ class GameScene: SKScene
         // 左にスクロール -> 元の位置 -> 左にスクロールと無限に繰り返すアクション
         let repeatScrollCloud = SKAction.repeatForever(SKAction.sequence([moveCloud, resetCloud]))
         // groundのスプライトを配置する
-        for _ in 0 ..< needNumber
+        for i in 0 ..< needNumber
         {
             // テクスチャを指定してスプライトを作成する
             let sprite = SKSpriteNode(texture: cloudTexture)
             
             // スプライトの表示する位置を指定する
             sprite.position = CGPoint(
-                x: cloudTexture.size().width / 2,
-                y: cloudTexture.size().height / 2
+                x: cloudTexture.size().width / 2 + cloudTexture.size().width * CGFloat(i),
+                y: self.size.height - cloudTexture.size().height / 2
             )
             // スプライトにアクションを設定する
             sprite.run(repeatScrollCloud)
