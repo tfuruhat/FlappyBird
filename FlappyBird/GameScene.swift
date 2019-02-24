@@ -23,6 +23,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate
     
     // スコア用
     var score = 0
+    var scoreLabelNode:SKLabelNode!
+    var bestScoreLabelNode:SKLabelNode!
+    let userDefaults:UserDefaults = UserDefaults.standard
     
     // SKView上にシーンが表示された時に呼ばれるメソッド
     override func didMove(to view: SKView)
@@ -47,6 +50,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate
         setupCould()
         setupWall()
         setupBird()
+        
+        setupScoreLabel()
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?)
@@ -78,6 +83,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate
             // スコア用の物体と衝突した
             print("ScoreUp")
             score += 1
+            scoreLabelNode.text = "Score:\(score)"
+            
+            // ベストスコア更新か確認する
+            var bestScore = userDefaults.integer(forKey: "BEST")
+            if score > bestScore
+            {
+                bestScore = score
+                bestScoreLabelNode.text = "Best Score:\(bestScore)"
+                userDefaults.set(bestScore, forKey: "BEST")
+                userDefaults.synchronize()
+            }
         }
         else
         {
@@ -100,12 +116,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate
     func restart()
     {
         score = 0
-        
+        scoreLabelNode.text = String("Score: \(score)")
         bird.position = CGPoint(x: self.frame.size.width * 0.2, y:self.frame.size.height * 0.7)
         bird.physicsBody?.velocity = CGVector.zero
         bird.physicsBody?.collisionBitMask = groundCategory | wallCategory
         bird.zRotation = 0
         
+        wallNode.removeAllChildren()
+
         bird.speed = 1
         scrollNode.speed = 1
     }
@@ -300,6 +318,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate
             // スコアアップ用のノード
             let scoreNode = SKNode()
             scoreNode.position = CGPoint(x: upper.size.width + birdSize.width / 2, y: self.frame.height / 2)
+            scoreNode.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: upper.size.width, height: self.frame.size.height))
             scoreNode.physicsBody?.isDynamic = false
             scoreNode.physicsBody?.categoryBitMask = self.scoreCategory
             scoreNode.physicsBody?.contactTestBitMask = self.birdCategory
@@ -318,5 +337,27 @@ class GameScene: SKScene, SKPhysicsContactDelegate
         let repeatForeverAnimation = SKAction.repeatForever(SKAction.sequence([createWallAnimation, waitAnimation]))
         
         wallNode.run(repeatForeverAnimation)
+    }
+    
+    func setupScoreLabel()
+    {
+        score = 0
+        scoreLabelNode = SKLabelNode()
+        scoreLabelNode.fontColor = UIColor.black
+        scoreLabelNode.position = CGPoint(x: 10, y: self.frame.size.height - 60)
+        scoreLabelNode.zPosition = 100
+        scoreLabelNode.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
+        scoreLabelNode.text = "Score:\(score)"
+        self.addChild(scoreLabelNode)
+        
+        bestScoreLabelNode = SKLabelNode()
+        bestScoreLabelNode.fontColor = UIColor.black
+        bestScoreLabelNode.position = CGPoint(x: 10, y: self.frame.size.height - 90)
+        bestScoreLabelNode.zPosition = 100
+        bestScoreLabelNode.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
+
+        let bestScore = userDefaults.integer(forKey: "BEST")
+        bestScoreLabelNode.text = "Best Score:\(bestScore)"
+        self.addChild(bestScoreLabelNode)
     }
 }
