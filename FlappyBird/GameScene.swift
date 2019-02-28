@@ -110,14 +110,25 @@ class GameScene: SKScene, SKPhysicsContactDelegate
             }
         }
         // アイテムと衝突した時の処理
-        else if (contact.bodyA.categoryBitMask & birdCategory) == birdCategory && (contact.bodyB.categoryBitMask & itemCategory) == itemCategory
+//        else if (contact.bodyA.categoryBitMask & birdCategory) == birdCategory && (contact.bodyB.categoryBitMask & itemCategory) == itemCategory
+        // 課題再提出のため修正
+        else if (contact.bodyA.categoryBitMask & itemCategory) == itemCategory || (contact.bodyB.categoryBitMask & itemCategory) == itemCategory
         {
             // システムサウンドを鳴らす
             let soundIdRing:SystemSoundID = 1013
             AudioServicesPlaySystemSound(soundIdRing)
             
             // 衝突したアイテムを非表示
-            self.itemNode.removeAllChildren()
+            // 衝突時にアイテムがどちらかか判定して非表示する。
+            if (contact.bodyA.categoryBitMask == itemCategory)
+            {
+                contact.bodyA.node?.removeFromParent()
+            }
+            else
+            {
+                contact.bodyB.node?.removeFromParent()
+            }
+            //self.itemNode.removeAllChildren()  // 課題再提出のため修正
             bird.physicsBody?.applyImpulse(CGVector(dx: 2, dy: 0)) //アイテムと衝突したら前方向に少し進める
             // アイテムスコア更新
             print("ItemScoreUp")
